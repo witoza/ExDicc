@@ -35,6 +35,26 @@ class MultiThreadWordTranslator(numOfWorkers: Int) {
       }
     }
 
+    def retryWhenSocketTimeout(times: Int, body: => Unit) {
+      var retry = true
+      var retryNbr = 0
+      while (retry) {
+        retry = false
+        try {
+          body
+        } catch {
+          case e: SocketTimeoutException =>
+            logger.warn("Problem with internet connection", e)
+            if (retryNbr < times) {
+              retry = true
+              retryNbr += 1
+            }
+          case e: Exception =>
+            logger.warn("Generic exception", e)
+        }
+      }
+    }
+
     def run() {
       while (true) {
         val word = wordsToHarvest.poll(1, TimeUnit.SECONDS)
@@ -42,23 +62,9 @@ class MultiThreadWordTranslator(numOfWorkers: Int) {
           logger.info("No more work, closing")
           return
         } else {
-          var retry = true
-          var retryNbr = 0
-          while (retry) {
-            retry = false
-            try {
-              emit(SpanishDict(word))
-            } catch {
-              case e: SocketTimeoutException =>
-                logger.warn("Check internet connection, can't translate word: " + word, e)
-                if (retryNbr < 3) {
-                  retry = true
-                  retryNbr += 1
-                }
-              case e: Exception =>
-                logger.warn("Problem with translating: " + word, e)
-            }
-          }
+          retryWhenSocketTimeout(3, {
+            emit(SpanishDict(word))
+          })
         }
       }
     }

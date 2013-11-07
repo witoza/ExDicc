@@ -75,7 +75,7 @@ class MultiThreadsProcessor {
     return WorkbookFactory.create(new FileInputStream(preq.fin))
   }
 
-  def process(preq: ProcessingRequest, numOfWorkers: Int) {
+  def process(preq: ProcessingRequest, numOfWorkers: Int = 1) {
 
     val t1 = System.currentTimeMillis
     val wb = getWorkbook(preq)
