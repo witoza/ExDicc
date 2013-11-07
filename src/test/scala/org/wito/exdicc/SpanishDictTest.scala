@@ -1,13 +1,14 @@
 package org.wito.exdicc
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SpanishDictTest {
 
   @Test
   def testMasculinNoun() {
-    var wi = SpanishDict("tienda")
+    var wi = SpanishDict("tienda").get
     assertEquals("tienda", wi.originalWord)
     assertEquals("la tienda", wi.lookedUpWord)
     assertEquals("store", wi.quickDef)
@@ -16,7 +17,7 @@ class SpanishDictTest {
 
   @Test
   def testMasculinAndFemeninNoun() {
-    var wi = SpanishDict("tio")
+    var wi = SpanishDict("tio").get
     assertEquals("tio", wi.originalWord)
     assertEquals("el/la tío", wi.lookedUpWord)
     assertEquals("uncle", wi.quickDef)
@@ -26,9 +27,6 @@ class SpanishDictTest {
   @Test
   def tesCantFindWord() {
     var wi = SpanishDict("niemamnie")
-    assertEquals("niemamnie", wi.originalWord)
-    assertEquals("", wi.lookedUpWord)
-    assertEquals("", wi.quickDef)
-    assertEquals("", wi.quickPos)
+    assertTrue(wi.isEmpty)
   }
 }

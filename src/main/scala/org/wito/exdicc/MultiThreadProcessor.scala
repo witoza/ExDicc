@@ -34,24 +34,25 @@ class MultiThreadsProcessor {
         val cell = row.getCell(0)
         val worldToBeLookedUp = cell.getStringCellValue
 
-        val wi = translation.get(worldToBeLookedUp).get
+        val wio = translation.get(worldToBeLookedUp)
+        if (wio.isDefined) {
+          val wi = wio.get
+          val ncell1 = row.createCell(1)
+          ncell1.setCellType(Cell.CELL_TYPE_STRING)
+          ncell1.setCellValue(wi.lookedUpWord)
 
-        //TODO: not found ?
-        val ncell1 = row.createCell(1)
-        ncell1.setCellType(Cell.CELL_TYPE_STRING)
-        ncell1.setCellValue(wi.lookedUpWord)
+          if (worldToBeLookedUp != wi.lookedUpWord && wi.lookedUpWord != "") {
+            ncell1.setCellStyle(style)
+          }
 
-        if (worldToBeLookedUp != wi.lookedUpWord && wi.lookedUpWord != "") {
-          ncell1.setCellStyle(style)
+          val ncell2 = row.createCell(2)
+          ncell2.setCellType(Cell.CELL_TYPE_STRING)
+          ncell2.setCellValue(wi.quickDef)
+
+          val ncell3 = row.createCell(3)
+          ncell3.setCellType(Cell.CELL_TYPE_STRING)
+          ncell3.setCellValue(wi.quickPos)
         }
-
-        val ncell2 = row.createCell(2)
-        ncell2.setCellType(Cell.CELL_TYPE_STRING)
-        ncell2.setCellValue(wi.quickDef)
-
-        val ncell3 = row.createCell(3)
-        ncell3.setCellType(Cell.CELL_TYPE_STRING)
-        ncell3.setCellValue(wi.quickPos)
       }
     }
   }

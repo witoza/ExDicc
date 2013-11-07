@@ -1,25 +1,18 @@
 package org.wito.exdicc
 
-import java.io.FileInputStream
-import java.util.concurrent.CountDownLatch
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.atomic.AtomicBoolean
-import scala.collection.mutable.ListBuffer
-import scala.concurrent.Lock
-import org.apache.log4j.LogManager
-import org.apache.poi.ss.usermodel.WorkbookFactory
 import java.util.concurrent.TimeUnit
+
+import scala.concurrent.Lock
+
+import org.apache.log4j.LogManager
 import org.apache.poi.ss.usermodel.Workbook
-import org.apache.poi.ss.usermodel.Cell
-import org.apache.poi.ss.usermodel.CellStyle
-import org.apache.poi.ss.usermodel.IndexedColors
-import java.io.FileOutputStream
-import java.util.concurrent.ExecutorService
 
 class MultiThreadWordTranslator(numOfWorkers: Int) {
 
-  private val logger = LogManager.getLogger(getClass())
+  private val logger = LogManager.getLogger(getClass)
 
   private val wordsToHarvest = new LinkedBlockingQueue[String]()
 
@@ -31,10 +24,13 @@ class MultiThreadWordTranslator(numOfWorkers: Int) {
 
   private class Worker extends Runnable {
 
-    private def emit(wi: WordInfo) {
+    private def emit(wi: Option[WordInfo]) {
+      if (wi.isEmpty) {
+        return
+      }
       wordsInfoLock.acquire()
       try {
-        wordsInfo += (wi.originalWord -> wi)
+        wordsInfo += (wi.get.originalWord -> wi.get)
       } finally {
         wordsInfoLock.release();
       }

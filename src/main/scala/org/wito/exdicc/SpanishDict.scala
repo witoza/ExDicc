@@ -5,7 +5,6 @@ import java.net.URLEncoder
 
 import org.apache.log4j.LogManager
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
 
 case class WordInfo(originalWord: String, lookedUpWord: String, quickDef: String, quickPos: String)
 
@@ -39,7 +38,7 @@ class SpanishDict(word: String) {
     return ""
   }
 
-  def getQuickDefinition(): WordInfo = {
+  def getQuickDefinition(): Option[WordInfo] = {
 
     var quickPos = ""
     var quickDef = ""
@@ -72,16 +71,16 @@ class SpanishDict(word: String) {
     } catch {
       case e: Exception =>
         logger.debug("Can't extract basic info for word " + word, e)
-        lookedUpWord = ""
+        return Option.empty
     }
 
-    return new WordInfo(word, lookedUpWord, quickDef, quickPos)
+    return Option(new WordInfo(word, lookedUpWord, quickDef, quickPos))
   }
 
 }
 
 object SpanishDict {
-  def apply(word: String): WordInfo = {
+  def apply(word: String): Option[WordInfo] = {
     return new SpanishDict(word).getQuickDefinition
   }
 }
