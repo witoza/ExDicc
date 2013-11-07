@@ -19,7 +19,7 @@ class SpanishDict(word: String) {
     logger.info("Getting doc from " + encodedURL + "...")
     val t1 = System.currentTimeMillis
     val document = Jsoup.connect(encodedURL).get
-    logger.info("done in " + (System.currentTimeMillis - t1) + "ms.")
+    logger.info("Got in " + (System.currentTimeMillis - t1) + "ms.")
     document
   }
 

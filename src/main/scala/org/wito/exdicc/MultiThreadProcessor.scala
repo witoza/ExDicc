@@ -31,27 +31,27 @@ class MultiThreadsProcessor {
       val sheet = wb.getSheetAt(i)
       for (i <- 1 to sheet.getLastRowNum) {
         val row = sheet.getRow(i)
-        val cell = row.getCell(0)
-        val worldToBeLookedUp = cell.getStringCellValue
+        if (row.getCell(1) == null) {
+          val worldToBeLookedUp = row.getCell(0).getStringCellValue
+          val wio = translation.get(worldToBeLookedUp)
+          if (wio.isDefined) {
+            val wi = wio.get
+            val ncell1 = row.createCell(1)
+            ncell1.setCellType(Cell.CELL_TYPE_STRING)
+            ncell1.setCellValue(wi.lookedUpWord)
 
-        val wio = translation.get(worldToBeLookedUp)
-        if (wio.isDefined) {
-          val wi = wio.get
-          val ncell1 = row.createCell(1)
-          ncell1.setCellType(Cell.CELL_TYPE_STRING)
-          ncell1.setCellValue(wi.lookedUpWord)
+            if (worldToBeLookedUp != wi.lookedUpWord && wi.lookedUpWord != "") {
+              ncell1.setCellStyle(style)
+            }
 
-          if (worldToBeLookedUp != wi.lookedUpWord && wi.lookedUpWord != "") {
-            ncell1.setCellStyle(style)
+            val ncell2 = row.createCell(2)
+            ncell2.setCellType(Cell.CELL_TYPE_STRING)
+            ncell2.setCellValue(wi.quickDef)
+
+            val ncell3 = row.createCell(3)
+            ncell3.setCellType(Cell.CELL_TYPE_STRING)
+            ncell3.setCellValue(wi.quickPos)
           }
-
-          val ncell2 = row.createCell(2)
-          ncell2.setCellType(Cell.CELL_TYPE_STRING)
-          ncell2.setCellValue(wi.quickDef)
-
-          val ncell3 = row.createCell(3)
-          ncell3.setCellType(Cell.CELL_TYPE_STRING)
-          ncell3.setCellValue(wi.quickPos)
         }
       }
     }
@@ -80,6 +80,7 @@ class MultiThreadsProcessor {
     val t1 = System.currentTimeMillis
     val wb = getWorkbook(preq)
     val translation = getTranslatedWords(wb, numOfWorkers)
+    logger.info("Translating...");
     fillWorkbookWithTranslation(wb, translation)
     saveWorkbook(wb, preq)
     logger.info("Done in " + (System.currentTimeMillis - t1) + "ms.")
