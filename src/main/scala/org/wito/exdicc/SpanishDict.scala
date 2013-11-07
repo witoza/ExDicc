@@ -6,7 +6,9 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.lang.Boolean
 
-case class WordInfo(originalWord: String, lookedUpWord: String, quickDef: String, quickPos: String);
+case class WordInfo(originalWord: String, lookedUpWord: String, quickDef: String, quickPos: String)
+
+case class ProcessingRequest(fin: String, fout: String)
 
 class SpanishDict(word: String) {
 
