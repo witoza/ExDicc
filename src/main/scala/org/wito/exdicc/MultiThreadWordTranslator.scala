@@ -28,18 +28,18 @@ class MultiThreadWordTranslator(numOfWorkers: Int) {
       if (wi.isEmpty) {
         return
       }
-      wordsInfoLock.acquire()
+      wordsInfoLock.acquire
       try {
         wordsInfo += (wi.get.originalWord -> wi.get)
       } finally {
-        wordsInfoLock.release();
+        wordsInfoLock.release
       }
     }
 
     def run() {
       while (true) {
         val word = wordsToHarvest.poll(1, TimeUnit.SECONDS)
-        if (word == null && workerPool.isShutdown()) {
+        if (word == null && workerPool.isShutdown) {
           logger.info("No more work - closing")
           return
         } else {
@@ -57,26 +57,26 @@ class MultiThreadWordTranslator(numOfWorkers: Int) {
   }
 
   private def closePool() {
-    workerPool.shutdown()
+    workerPool.shutdown
     workerPool.awaitTermination(10, TimeUnit.DAYS)
   }
 
   private def extractWords(wb: Workbook) {
-    for (i <- 0 to wb.getNumberOfSheets() - 1) {
+    for (i <- 0 to wb.getNumberOfSheets - 1) {
       val sheet = wb.getSheetAt(i)
-      for (i <- 1 to sheet.getLastRowNum()) {
-        val theWord = sheet.getRow(i).getCell(0).getStringCellValue()
-        wordsToHarvest.add(theWord);
+      for (i <- 1 to sheet.getLastRowNum) {
+        val theWord = sheet.getRow(i).getCell(0).getStringCellValue
+        wordsToHarvest.add(theWord)
       }
     }
   }
 
   def translateWorldsFromWorkbook(wb: Workbook): Map[String, WordInfo] = {
-    preparePool()
+    preparePool
     try {
-      extractWords(wb);
+      extractWords(wb)
     } finally {
-      closePool()
+      closePool
     }
     return wordsInfo.toMap
   }

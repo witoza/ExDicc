@@ -2,9 +2,9 @@ package org.wito.exdicc
 
 import java.lang.Boolean
 import java.net.URLEncoder
-
 import org.apache.log4j.LogManager
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 
 case class WordInfo(originalWord: String, lookedUpWord: String, quickDef: String, quickPos: String)
 
@@ -38,43 +38,49 @@ class SpanishDict(word: String) {
     return ""
   }
 
+  def select1st(node: Option[Element], path: String): Option[Element] = {
+    if (node.isEmpty) {
+      return None
+    }
+    val nds = node.get.select(path)
+    if (nds.isEmpty) {
+      return None
+    }
+    return Some(nds.get(0))
+  }
+
   def getQuickDefinition(): Option[WordInfo] = {
 
-    var quickPos = ""
-    var quickDef = ""
-    var lookedUpWord = ""
+    val resultBlockNd = select1st(Some(doc), ".results-block")
+    val hwBlockNd = select1st(resultBlockNd, ".hw-block")
+    val quickDefNd = select1st(hwBlockNd, ".quick_def")
 
-    val resultBlock = doc.select(".results-block").get(0)
-
-    try {
-      val nd = resultBlock.select(".hw-block").get(0)
-      quickDef = nd.select(".quick_def").get(0).text
-      lookedUpWord = nd.select(".word").get(0).text
-
-      val quickPosNode = nd.select(".quick_pos")
-      if (!quickPosNode.isEmpty) {
-        quickPos = quickPosNode.get(0).text
-        if (quickPos == "noun") {
-          val partOfSpeachNode = resultBlock.select(".main-translation .dictionary_word .part_of_speech")
-          if (!partOfSpeachNode.isEmpty()) {
-            val pos = partOfSpeachNode.get(0).text
-            val m = pos.contains("masculine")
-            val f = pos.contains("feminine")
-            lookedUpWord = getGenderPrefixForNoun(m, f) + lookedUpWord
-          } else {
-            logger.warn("Can't extract gender of a noun " + word)
-          }
-
-        }
-      }
-
-    } catch {
-      case e: Exception =>
-        logger.debug("Can't extract basic info for word " + word, e)
-        return Option.empty
+    if (quickDefNd.isEmpty) {
+      logger.info("Can't extract basic info for word " + word)
+      return None
     }
 
-    return Option(new WordInfo(word, lookedUpWord, quickDef, quickPos))
+    val quickDef = quickDefNd.get.text
+    var lookedUpWord = select1st(hwBlockNd, ".word").get.text
+    var quickPos = ""
+
+    val quickPosNd = select1st(hwBlockNd, ".quick_pos")
+    if (!quickPosNd.isEmpty) {
+      quickPos = quickPosNd.get.text
+      if (quickPos == "noun") {
+        val partOfSpeachNode = resultBlockNd.get.select(".main-translation .dictionary_word .part_of_speech")
+        if (!partOfSpeachNode.isEmpty) {
+          val pos = partOfSpeachNode.get(0).text
+          val m = pos.contains("masculine")
+          val f = pos.contains("feminine")
+          lookedUpWord = getGenderPrefixForNoun(m, f) + lookedUpWord
+        } else {
+          logger.warn("Can't extract gender of a noun " + word)
+        }
+      }
+    }
+
+    return Some(new WordInfo(word, lookedUpWord, quickDef, quickPos))
   }
 
 }
