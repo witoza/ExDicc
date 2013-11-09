@@ -13,7 +13,7 @@ import org.apache.poi.ss.usermodel.WorkbookFactory
 object MultiThreadsProcessor {
   def main(args: Array[String]) {
     val proc = new MultiThreadsProcessor
-    proc.process(new ProcessingRequest("z:\\exdicc_sample.xlsx", "z:\\exdicc_sample2.xlsx"), 4)
+    proc.process(new ProcessingRequest("z:\\exdicc_spanish1.xlsx"), 10)
   }
 }
 
@@ -27,11 +27,12 @@ class MultiThreadsProcessor {
     style.setFillForegroundColor(IndexedColors.YELLOW.getIndex)
     style.setFillPattern(CellStyle.BIG_SPOTS)
 
-    for (i <- 0 to wb.getNumberOfSheets - 1) {
+    for (i <- 0 until wb.getNumberOfSheets) {
       val sheet = wb.getSheetAt(i)
-      for (i <- 1 to sheet.getLastRowNum) {
+      logger.info("Processing sheet " +sheet.getSheetName)
+      for (i <- 0 to sheet.getLastRowNum) {
         val row = sheet.getRow(i)
-        if (row.getCell(1) == null) {
+        if (row.getCell(0) != null && row.getCell(1) == null) {
           val worldToBeLookedUp = row.getCell(0).getStringCellValue
           val wio = translation.get(worldToBeLookedUp)
           if (wio.isDefined) {

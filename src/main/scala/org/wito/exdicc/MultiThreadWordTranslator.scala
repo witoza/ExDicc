@@ -1,13 +1,15 @@
 package org.wito.exdicc
 
+import java.net.SocketTimeoutException
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
+
 import scala.concurrent.Lock
+
 import org.apache.log4j.LogManager
 import org.apache.poi.ss.usermodel.Workbook
-import java.net.SocketTimeoutException
 
 class MultiThreadWordTranslator(numOfWorkers: Int) {
 
@@ -22,6 +24,8 @@ class MultiThreadWordTranslator(numOfWorkers: Int) {
   private var workerPool: ExecutorService = _
 
   private class Worker extends Runnable {
+
+    private val spanishDict = new SpanishDict
 
     private def emit(wi: Option[WordInfo]) {
       if (wi.isEmpty) {
@@ -63,7 +67,7 @@ class MultiThreadWordTranslator(numOfWorkers: Int) {
           return
         } else {
           retryWhenSocketTimeout(3, {
-            emit(SpanishDict(word))
+            emit(spanishDict.getQuickDefinition(word))
           })
         }
       }
@@ -72,8 +76,8 @@ class MultiThreadWordTranslator(numOfWorkers: Int) {
 
   private def preparePool() {
     workerPool = Executors.newFixedThreadPool(numOfWorkers)
-    for (i <- 0 to numOfWorkers - 1) {
-      workerPool.submit(new Worker())
+    for (i <- 0 until numOfWorkers) {
+      workerPool.submit(new Worker)
     }
   }
 
@@ -83,11 +87,11 @@ class MultiThreadWordTranslator(numOfWorkers: Int) {
   }
 
   private def extractWords(wb: Workbook) {
-    for (i <- 0 to wb.getNumberOfSheets - 1) {
+    for (i <- 0 until wb.getNumberOfSheets) {
       val sheet = wb.getSheetAt(i)
-      for (i <- 1 to sheet.getLastRowNum) {
+      for (i <- 0 to sheet.getLastRowNum) {
         val row = sheet.getRow(i)
-        if (row.getCell(1) == null) {
+        if (row.getCell(0) != null && row.getCell(1) == null) {
           val theWord = row.getCell(0).getStringCellValue
           wordsToHarvest.add(theWord)
         }

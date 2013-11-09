@@ -2,26 +2,23 @@ package org.wito.exdicc
 
 import java.lang.Boolean
 import java.net.URLEncoder
+
 import org.apache.log4j.LogManager
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
 case class WordInfo(originalWord: String, lookedUpWord: String, quickDef: String, quickPos: String)
 
-case class ProcessingRequest(fin: String, fout: String)
+case class ProcessingRequest(fin: String, fout: String) {
 
-class SpanishDict(word: String) {
+  def this(fin: String) = this(fin, fin)
+
+}
+
+class SpanishDict {
 
   private val logger = LogManager.getLogger(getClass)
-
-  private val doc = {
-    val encodedURL = "http://www.spanishdict.com/translate/" + URLEncoder.encode(word)
-    logger.info("Getting doc from " + encodedURL + "...")
-    val t1 = System.currentTimeMillis
-    val document = Jsoup.connect(encodedURL).get
-    logger.info("Got in " + (System.currentTimeMillis - t1) + "ms.")
-    document
-  }
+  private val sentenceTranslator = new SpanishSentenceTranslator
 
   private def getGenderPrefixForNoun(m: Boolean, f: Boolean): String = {
     if (m) {
@@ -38,7 +35,7 @@ class SpanishDict(word: String) {
     return ""
   }
 
-  def select1st(node: Option[Element], path: String): Option[Element] = {
+  private def select1st(node: Option[Element], path: String): Option[Element] = {
     if (node.isEmpty) {
       return None
     }
@@ -49,15 +46,26 @@ class SpanishDict(word: String) {
     return Some(nds.get(0))
   }
 
-  def getQuickDefinition(): Option[WordInfo] = {
+  def getQuickDefinition(word: String): Option[WordInfo] = {
 
-    val resultBlockNd = select1st(Some(doc), ".results-block")
+    val encodedURL = "http://www.spanishdict.com/translate/" + URLEncoder.encode(word)
+    logger.debug("Getting doc from " + encodedURL + "...")
+    val t1 = System.currentTimeMillis
+    val document = Jsoup.connect(encodedURL).get
+    logger.debug("Got in " + (System.currentTimeMillis - t1) + "ms.")
+
+    val resultBlockNd = select1st(Some(document), ".results-block")
     val hwBlockNd = select1st(resultBlockNd, ".hw-block")
     val quickDefNd = select1st(hwBlockNd, ".quick_def")
 
     if (quickDefNd.isEmpty) {
       logger.info("Can't extract basic info for word " + word)
+      //      val res = sentenceTranslator.translate(word)
+      //      if (res.isEmpty) {
       return None
+      //      } else {
+      //        return Some(new WordInfo(word, word, res.get, "translation"))
+      //      }
     }
 
     val quickDef = quickDefNd.get.text
@@ -85,8 +93,3 @@ class SpanishDict(word: String) {
 
 }
 
-object SpanishDict {
-  def apply(word: String): Option[WordInfo] = {
-    return new SpanishDict(word).getQuickDefinition
-  }
-}

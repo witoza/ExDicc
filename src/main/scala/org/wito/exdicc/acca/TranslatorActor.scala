@@ -7,7 +7,7 @@ class TranslatorActor extends Actor {
 
   def receive = {
     case word: String =>
-      sender ! SpanishDict(word);
+      sender ! new SpanishDict().getQuickDefinition(word);
   }
 
 }

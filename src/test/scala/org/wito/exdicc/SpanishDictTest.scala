@@ -6,9 +6,11 @@ import org.junit.Test
 
 class SpanishDictTest {
 
+  private val spanishDict = new SpanishDict
+
   @Test
-  def testMasculinNoun() {
-    var wi = SpanishDict("tienda").get
+  def masculinNoun() {
+    var wi = spanishDict.getQuickDefinition("tienda").get
     assertEquals("tienda", wi.originalWord)
     assertEquals("la tienda", wi.lookedUpWord)
     assertEquals("store", wi.quickDef)
@@ -16,8 +18,8 @@ class SpanishDictTest {
   }
 
   @Test
-  def testMasculinAndFemeninNoun() {
-    var wi = SpanishDict("tio").get
+  def masculinAndFemeninNoun() {
+    var wi = spanishDict.getQuickDefinition("tio").get
     assertEquals("tio", wi.originalWord)
     assertEquals("el/la tío", wi.lookedUpWord)
     assertEquals("uncle", wi.quickDef)
@@ -25,8 +27,8 @@ class SpanishDictTest {
   }
 
   @Test
-  def tesCantFindWord() {
-    var wi = SpanishDict("niemamnie")
+  def cantFindWord() {
+    var wi = spanishDict.getQuickDefinition("niemamnie")
     assertTrue(wi.isEmpty)
   }
 }
