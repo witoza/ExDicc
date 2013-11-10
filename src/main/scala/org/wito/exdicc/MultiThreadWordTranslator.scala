@@ -5,11 +5,12 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
-
 import scala.concurrent.Lock
-
 import org.apache.log4j.LogManager
 import org.apache.poi.ss.usermodel.Workbook
+import org.apache.poi.ss.usermodel.Cell
+import org.apache.poi.ss.usermodel.Row
+import org.wito.exdicc.CellHelper._
 
 class MultiThreadWordTranslator(numOfWorkers: Int) {
 
@@ -91,7 +92,7 @@ class MultiThreadWordTranslator(numOfWorkers: Int) {
       val sheet = wb.getSheetAt(i)
       for (i <- 0 to sheet.getLastRowNum) {
         val row = sheet.getRow(i)
-        if (row.getCell(0) != null && row.getCell(1) == null) {
+        if (!rowIsTranslated(row)) {
           val theWord = row.getCell(0).getStringCellValue
           wordsToHarvest.add(theWord)
         }

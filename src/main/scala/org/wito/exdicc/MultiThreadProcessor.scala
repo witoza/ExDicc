@@ -7,13 +7,16 @@ import org.apache.log4j.LogManager
 import org.apache.poi.ss.usermodel.Cell
 import org.apache.poi.ss.usermodel.CellStyle
 import org.apache.poi.ss.usermodel.IndexedColors
+import org.apache.poi.ss.usermodel.Row
 import org.apache.poi.ss.usermodel.Workbook
 import org.apache.poi.ss.usermodel.WorkbookFactory
+import org.wito.exdicc.CellHelper._
 
 object MultiThreadsProcessor {
   def main(args: Array[String]) {
     val proc = new MultiThreadsProcessor
-    proc.process(new ProcessingRequest("z:\\exdicc_spanish1.xlsx"), 10)
+    val preq = new ProcessingRequest("z:\\exdicc_spanish1.xlsx")
+    proc.process(preq, 10)
   }
 }
 
@@ -23,35 +26,28 @@ class MultiThreadsProcessor {
 
   private def fillWorkbookWithTranslation(wb: Workbook, translation: Map[String, WordInfo]) {
 
-    val style = wb.createCellStyle
-    style.setFillForegroundColor(IndexedColors.YELLOW.getIndex)
-    style.setFillPattern(CellStyle.BIG_SPOTS)
+    val changeInOriginalWordCellStyle = wb.createCellStyle
+    changeInOriginalWordCellStyle.setFillForegroundColor(IndexedColors.YELLOW.getIndex)
+    changeInOriginalWordCellStyle.setFillPattern(CellStyle.BIG_SPOTS)
 
     for (i <- 0 until wb.getNumberOfSheets) {
       val sheet = wb.getSheetAt(i)
-      logger.info("Processing sheet " +sheet.getSheetName)
+      logger.info("Processing sheet " + sheet.getSheetName)
       for (i <- 0 to sheet.getLastRowNum) {
         val row = sheet.getRow(i)
-        if (row.getCell(0) != null && row.getCell(1) == null) {
-          val worldToBeLookedUp = row.getCell(0).getStringCellValue
-          val wio = translation.get(worldToBeLookedUp)
-          if (wio.isDefined) {
-            val wi = wio.get
-            val ncell1 = row.createCell(1)
-            ncell1.setCellType(Cell.CELL_TYPE_STRING)
-            ncell1.setCellValue(wi.lookedUpWord)
+        if (!rowIsTranslated(row)) {
+          val worldToLookUp = row.getCell(0).getStringCellValue
+          val trans = translation.get(worldToLookUp)
+          if (trans.isDefined) {
+            val wi = trans.get
 
-            if (worldToBeLookedUp != wi.lookedUpWord && wi.lookedUpWord != "") {
-              ncell1.setCellStyle(style)
+            val ncell1 = createCell(row, 1, wi.lookedUpWord)
+            if (worldToLookUp != wi.lookedUpWord && wi.lookedUpWord != "") {
+              ncell1.setCellStyle(changeInOriginalWordCellStyle)
             }
 
-            val ncell2 = row.createCell(2)
-            ncell2.setCellType(Cell.CELL_TYPE_STRING)
-            ncell2.setCellValue(wi.quickDef)
-
-            val ncell3 = row.createCell(3)
-            ncell3.setCellType(Cell.CELL_TYPE_STRING)
-            ncell3.setCellValue(wi.quickPos)
+            createCell(row, 2, wi.quickDef)
+            createCell(row, 4, wi.quickPos)
           }
         }
       }
@@ -61,15 +57,6 @@ class MultiThreadsProcessor {
   private def getTranslatedWords(wb: Workbook, numOfWorkers: Int): Map[String, WordInfo] = {
     val wordTranslator = new MultiThreadWordTranslator(numOfWorkers)
     return wordTranslator.translateWorldsFromWorkbook(wb)
-  }
-
-  def saveWorkbook(wb: Workbook, preq: ProcessingRequest) {
-    val fileOut = new FileOutputStream(preq.fout)
-    try {
-      wb.write(fileOut)
-    } finally {
-      fileOut.close
-    }
   }
 
   def getWorkbook(preq: ProcessingRequest): Workbook = {
@@ -83,7 +70,7 @@ class MultiThreadsProcessor {
     val translation = getTranslatedWords(wb, numOfWorkers)
     logger.info("Translating...");
     fillWorkbookWithTranslation(wb, translation)
-    saveWorkbook(wb, preq)
+    saveWorkbook(wb, preq.fout)
     logger.info("Done in " + (System.currentTimeMillis - t1) + "ms.")
 
   }
