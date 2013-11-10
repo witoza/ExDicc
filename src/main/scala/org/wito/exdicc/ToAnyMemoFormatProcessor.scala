@@ -1,30 +1,34 @@
 package org.wito.exdicc
 
-import org.apache.log4j.LogManager
-import org.apache.poi.ss.usermodel.WorkbookFactory
 import java.io.FileInputStream
-import org.wito.exdicc.CellHelper._
-import org.apache.poi.ss.usermodel.Sheet
+
+import org.apache.log4j.LogManager
 import org.apache.poi.ss.usermodel.Row
+import org.apache.poi.ss.usermodel.Sheet
+import org.apache.poi.ss.usermodel.Workbook
+import org.apache.poi.ss.usermodel.WorkbookFactory
+import org.wito.exdicc.CellHelper.copyCell
+import org.wito.exdicc.CellHelper.createCell
+import org.wito.exdicc.CellHelper.isCellEmpty
+import org.wito.exdicc.CellHelper.saveWorkbook
 
 object ToAnyMemoFormatProcessor {
   def main(args: Array[String]) {
-    val amp = new ToAnyMemoFormatProcessor
-    amp.process(new ProcessingRequest("z:\\exdicc_spanish1.xlsx", "z:\\exdicc_spanish1_anymemo.xlsx"))
+    new ToAnyMemoFormatProcessor().process(new ProcessingRequest("z:\\exdicc_spanish1.xlsx", "z:\\exdicc_spanish1_anymemo.xlsx"))
   }
 }
 
 class ToAnyMemoFormatProcessor {
   private val logger = LogManager.getLogger(getClass)
 
-  def copyRowToSheet(row: Row, sheet: Sheet) {
+  private def copyRowToSheet(row: Row, sheet: Sheet) {
     val newRow = sheet.createRow(sheet.getLastRowNum + 1)
     for (j <- 1 to row.getLastCellNum) { // all but first
       copyCell(newRow, j - 1, row.getCell(j))
     }
   }
 
-  def swapColumns(sheet: Sheet, c1: Int, c2: Int) {
+  private def swapColumns(sheet: Sheet, c1: Int, c2: Int) {
 
     for (i <- sheet.getFirstRowNum to sheet.getLastRowNum) {
       val row = sheet.getRow(i)
@@ -36,6 +40,12 @@ class ToAnyMemoFormatProcessor {
       copyCell(row, c1, cell2)
       cell2.setCellStyle(cell1Style)
       cell2.setCellValue(cell1Value)
+    }
+  }
+
+  private def removeAllSheetsButLast(wb: Workbook) {
+    for (i <- 0 until wb.getNumberOfSheets - 1) {
+      wb.removeSheetAt(0)
     }
   }
 
@@ -61,12 +71,8 @@ class ToAnyMemoFormatProcessor {
         }
       }
     }
-
-    for (i <- 0 until wb.getNumberOfSheets - 1) {
-      wb.removeSheetAt(0)
-    }
+    removeAllSheetsButLast(wb)
     swapColumns(amSheet, 0, 1)
-
     saveWorkbook(wb, preq.fout);
   }
 }

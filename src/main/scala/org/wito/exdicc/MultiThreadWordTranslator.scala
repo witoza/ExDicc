@@ -5,12 +5,10 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
-import scala.concurrent.Lock
+
 import org.apache.log4j.LogManager
 import org.apache.poi.ss.usermodel.Workbook
-import org.apache.poi.ss.usermodel.Cell
-import org.apache.poi.ss.usermodel.Row
-import org.wito.exdicc.CellHelper._
+import org.wito.exdicc.CellHelper.rowIsTranslated
 
 class MultiThreadWordTranslator(numOfWorkers: Int) {
 
@@ -18,27 +16,13 @@ class MultiThreadWordTranslator(numOfWorkers: Int) {
 
   private val wordsToHarvest = new LinkedBlockingQueue[String]()
 
-  private val wordsInfo = scala.collection.mutable.Map[String, WordInfo]()
-
-  private val wordsInfoLock = new Lock()
+  private val wordsInfo = scala.collection.concurrent.TrieMap[String, WordInfo]()
 
   private var workerPool: ExecutorService = _
 
   private class Worker extends Runnable {
 
     private val spanishDict = new SpanishDict
-
-    private def emit(wi: Option[WordInfo]) {
-      if (wi.isEmpty) {
-        return
-      }
-      wordsInfoLock.acquire
-      try {
-        wordsInfo += (wi.get.originalWord -> wi.get)
-      } finally {
-        wordsInfoLock.release
-      }
-    }
 
     def retryWhenSocketTimeout(times: Int, body: => Unit) {
       var retry = true
@@ -55,7 +39,7 @@ class MultiThreadWordTranslator(numOfWorkers: Int) {
               retryNbr += 1
             }
           case e: Exception =>
-            logger.warn("Generic exception", e)
+            logger.warn("Unrecoverable exception", e)
         }
       }
     }
@@ -68,7 +52,10 @@ class MultiThreadWordTranslator(numOfWorkers: Int) {
           return
         } else {
           retryWhenSocketTimeout(3, {
-            emit(spanishDict.getQuickDefinition(word))
+            val wi = spanishDict.getQuickDefinition(word)
+            if (wi.isDefined) {
+              wordsInfo.putIfAbsent(wi.get.originalWord, wi.get)
+            }
           })
         }
       }
