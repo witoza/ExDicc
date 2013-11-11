@@ -1,16 +1,15 @@
 package org.wito.exdicc
 
 import java.io.FileInputStream
-import java.io.FileOutputStream
 
 import org.apache.log4j.LogManager
-import org.apache.poi.ss.usermodel.Cell
 import org.apache.poi.ss.usermodel.CellStyle
 import org.apache.poi.ss.usermodel.IndexedColors
-import org.apache.poi.ss.usermodel.Row
 import org.apache.poi.ss.usermodel.Workbook
 import org.apache.poi.ss.usermodel.WorkbookFactory
-import org.wito.exdicc.CellHelper._
+import org.wito.exdicc.CellHelper.createCell
+import org.wito.exdicc.CellHelper.rowIsTranslated
+import org.wito.exdicc.CellHelper.saveWorkbook
 
 object MultiThreadsProcessor {
   def main(args: Array[String]) {

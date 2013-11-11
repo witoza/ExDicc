@@ -28,7 +28,7 @@ class ToAnyMemoFormatProcessor {
     }
   }
 
-  private def swapColumns(sheet: Sheet, c1: Int, c2: Int) {
+  private def swapColumnsAtSheet(sheet: Sheet, c1: Int, c2: Int) {
 
     for (i <- sheet.getFirstRowNum to sheet.getLastRowNum) {
       val row = sheet.getRow(i)
@@ -72,7 +72,7 @@ class ToAnyMemoFormatProcessor {
       }
     }
     removeAllSheetsButLast(wb)
-    swapColumns(amSheet, 0, 1)
+    swapColumnsAtSheet(amSheet, 0, 1)
     saveWorkbook(wb, preq.fout);
   }
 }

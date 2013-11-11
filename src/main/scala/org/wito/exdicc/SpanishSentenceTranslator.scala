@@ -19,6 +19,7 @@ class SpanishSentenceTranslator {
       if (!nd.asXml.contains("alt=\"Loading\"")) {
         return Some(nd.asText)
       }
+      client.waitForBackgroundJavaScript(1000)
     }
     return None
   }

@@ -10,9 +10,7 @@ import org.jsoup.nodes.Element
 case class WordInfo(originalWord: String, lookedUpWord: String, quickDef: String, quickPos: String)
 
 case class ProcessingRequest(fin: String, fout: String) {
-
   def this(fin: String) = this(fin, fin)
-
 }
 
 class SpanishDict {
@@ -59,7 +57,7 @@ class SpanishDict {
     val quickDefNd = select1st(hwBlockNd, ".quick_def")
 
     if (quickDefNd.isEmpty) {
-      logger.info("Can't extract basic info for word " + word)
+      logger.info("Can't extract basic info for '" + word + "'")
       //      val res = sentenceTranslator.translate(word)
       //      if (res.isEmpty) {
       return None

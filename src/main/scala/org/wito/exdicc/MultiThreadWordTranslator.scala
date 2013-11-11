@@ -1,6 +1,5 @@
 package org.wito.exdicc
 
-import java.net.SocketTimeoutException
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.LinkedBlockingQueue
@@ -8,6 +7,7 @@ import java.util.concurrent.TimeUnit
 
 import org.apache.log4j.LogManager
 import org.apache.poi.ss.usermodel.Workbook
+import org.wito.exdicc.CellHelper.retryWhenSocketTimeout
 import org.wito.exdicc.CellHelper.rowIsTranslated
 
 class MultiThreadWordTranslator(numOfWorkers: Int) {
@@ -24,41 +24,23 @@ class MultiThreadWordTranslator(numOfWorkers: Int) {
 
     private val spanishDict = new SpanishDict
 
-    def retryWhenSocketTimeout(times: Int, body: => Unit) {
-      var retry = true
-      var retryNbr = 0
-      while (retry) {
-        retry = false
-        try {
-          body
-        } catch {
-          case e: SocketTimeoutException =>
-            logger.warn("Problem with internet connection", e)
-            if (retryNbr < times) {
-              retry = true
-              retryNbr += 1
-            }
-          case e: Exception =>
-            logger.warn("Unrecoverable exception", e)
-        }
-      }
-    }
-
     def run() {
-      while (true) {
+      var close = false
+      while (!close) {
         val word = wordsToHarvest.poll(1, TimeUnit.SECONDS)
         if (word == null && workerPool.isShutdown) {
-          logger.info("No more work, closing")
-          return
+          close = true
         } else {
-          retryWhenSocketTimeout(3, {
+          retryWhenSocketTimeout(3) {
             val wi = spanishDict.getQuickDefinition(word)
             if (wi.isDefined) {
               wordsInfo.putIfAbsent(wi.get.originalWord, wi.get)
             }
-          })
+          }
+
         }
       }
+      logger.info("No more work, closing")
     }
   }
 

@@ -1,12 +1,36 @@
 package org.wito.exdicc
 
 import java.io.FileOutputStream
-
 import org.apache.poi.ss.usermodel.Cell
 import org.apache.poi.ss.usermodel.Row
 import org.apache.poi.ss.usermodel.Workbook
+import java.net.SocketTimeoutException
+import org.apache.log4j.LogManager
 
 object CellHelper {
+
+  private val logger = LogManager.getLogger(getClass)
+
+  def retryWhenSocketTimeout(times: Int)(body: => Unit) {
+    var retry = true
+    var retryNbr = 0
+    while (retry) {
+      retry = false
+      try {
+        body
+      } catch {
+        case e: SocketTimeoutException =>
+          logger.info("Recoverable exception " + e.getMessage() + ", retrying " + retry + "/" + times)
+          if (retryNbr < times) {
+            retry = true
+            retryNbr += 1
+            logger.info("Too many retries, error", e)
+          }
+        case e: Exception =>
+          logger.warn("Unrecoverable exception", e)
+      }
+    }
+  }
 
   def isCellEmpty(row: Row, cellNbr: Int): Boolean =
     isCellEmpty(row.getCell(cellNbr))
