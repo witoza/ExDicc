@@ -1,15 +1,11 @@
 package org.wito.exdicc
 
-import java.io.FileInputStream
-
 import org.apache.log4j.LogManager
 import org.apache.poi.ss.usermodel.CellStyle
 import org.apache.poi.ss.usermodel.IndexedColors
 import org.apache.poi.ss.usermodel.Workbook
-import org.apache.poi.ss.usermodel.WorkbookFactory
 import org.wito.exdicc.CellHelper.createCell
 import org.wito.exdicc.CellHelper.rowIsTranslated
-import org.wito.exdicc.CellHelper.saveWorkbook
 
 object MultiThreadsProcessor {
   def main(args: Array[String]) {
@@ -19,7 +15,7 @@ object MultiThreadsProcessor {
   }
 }
 
-class MultiThreadsProcessor {
+class MultiThreadsProcessor extends ExcelSupport {
 
   private val logger = LogManager.getLogger(getClass)
 
@@ -32,7 +28,7 @@ class MultiThreadsProcessor {
     for (i <- 0 until wb.getNumberOfSheets) {
       val sheet = wb.getSheetAt(i)
       logger.info("Processing sheet " + sheet.getSheetName)
-      for (i <- 0 to sheet.getLastRowNum) {
+      for (i <- sheet.getFirstRowNum until sheet.getLastRowNum) {
         val row = sheet.getRow(i)
         if (!rowIsTranslated(row)) {
           val worldToLookUp = row.getCell(0).getStringCellValue
@@ -40,8 +36,8 @@ class MultiThreadsProcessor {
           if (trans.isDefined) {
             val wi = trans.get
 
-            val ncell1 = createCell(row, 1, wi.lookedUpWord)
             if (worldToLookUp != wi.lookedUpWord && wi.lookedUpWord != "") {
+              val ncell1 = createCell(row, 1, wi.lookedUpWord)
               ncell1.setCellStyle(changeInOriginalWordCellStyle)
             }
 
@@ -56,10 +52,6 @@ class MultiThreadsProcessor {
   private def getTranslatedWords(wb: Workbook, numOfWorkers: Int): Map[String, WordInfo] = {
     val wordTranslator = new MultiThreadWordTranslator(numOfWorkers)
     return wordTranslator.translateWorldsFromWorkbook(wb)
-  }
-
-  def getWorkbook(preq: ProcessingRequest): Workbook = {
-    return WorkbookFactory.create(new FileInputStream(preq.fin))
   }
 
   def process(preq: ProcessingRequest, numOfWorkers: Int = 1) {

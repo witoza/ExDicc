@@ -1,17 +1,18 @@
 package org.wito.exdicc
 
 import java.io.FileOutputStream
+import java.net.SocketTimeoutException
+
+import org.apache.log4j.LogManager
 import org.apache.poi.ss.usermodel.Cell
 import org.apache.poi.ss.usermodel.Row
 import org.apache.poi.ss.usermodel.Workbook
-import java.net.SocketTimeoutException
-import org.apache.log4j.LogManager
 
 object CellHelper {
 
   private val logger = LogManager.getLogger(getClass)
 
-  def retryWhenSocketTimeout(times: Int)(body: => Unit) {
+  def retryWhenSocketTimeout(times: Int = 3)(body: => Unit) {
     var retry = true
     var retryNbr = 0
     while (retry) {
@@ -20,7 +21,7 @@ object CellHelper {
         body
       } catch {
         case e: SocketTimeoutException =>
-          logger.info("Recoverable exception " + e.getMessage() + ", retrying " + retry + "/" + times)
+          logger.info("Recoverable exception " + e.getMessage() + ", retrying " + retryNbr + "/" + times)
           if (retryNbr < times) {
             retry = true
             retryNbr += 1
@@ -39,7 +40,7 @@ object CellHelper {
     cell == null || cell.getStringCellValue.trim.isEmpty
 
   def rowIsTranslated(row: Row): Boolean =
-    !isCellEmpty(row, 0) && !isCellEmpty(row, 1)
+    !isCellEmpty(row, 0) && !isCellEmpty(row, 2)
 
   def createCell(row: Row, cellNbr: Int, value: String): Cell = {
     val cell = row.createCell(cellNbr)
@@ -60,13 +61,5 @@ object CellHelper {
     cell
   }
 
-  def saveWorkbook(wb: Workbook, fout: String) {
-    val fileOut = new FileOutputStream(fout)
-    try {
-      wb.write(fileOut)
-    } finally {
-      fileOut.close
-    }
-  }
 
 }
