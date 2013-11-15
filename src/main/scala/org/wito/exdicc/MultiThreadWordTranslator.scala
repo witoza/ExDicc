@@ -59,7 +59,7 @@ class MultiThreadWordTranslator(numOfWorkers: Int) {
   private def extractWords(wb: Workbook) {
     for (i <- 0 until wb.getNumberOfSheets) {
       val sheet = wb.getSheetAt(i)
-      for (i <- sheet.getFirstRowNum until sheet.getLastRowNum) {
+      for (i <- sheet.getFirstRowNum to sheet.getLastRowNum) {
         val row = sheet.getRow(i)
         if (!rowIsTranslated(row)) {
           val theWord = row.getCell(0).getStringCellValue

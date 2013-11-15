@@ -28,7 +28,7 @@ class MultiThreadsProcessor extends ExcelSupport {
     for (i <- 0 until wb.getNumberOfSheets) {
       val sheet = wb.getSheetAt(i)
       logger.info("Processing sheet " + sheet.getSheetName)
-      for (i <- sheet.getFirstRowNum until sheet.getLastRowNum) {
+      for (i <- sheet.getFirstRowNum to sheet.getLastRowNum) {
         val row = sheet.getRow(i)
         if (!rowIsTranslated(row)) {
           val worldToLookUp = row.getCell(0).getStringCellValue
