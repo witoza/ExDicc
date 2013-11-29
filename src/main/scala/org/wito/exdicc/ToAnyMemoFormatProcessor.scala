@@ -1,46 +1,16 @@
 package org.wito.exdicc
 
-import java.io.FileInputStream
-
 import org.apache.log4j.LogManager
-import org.apache.poi.ss.usermodel.Row
-import org.apache.poi.ss.usermodel.Sheet
-import org.apache.poi.ss.usermodel.Workbook
-import org.apache.poi.ss.usermodel.WorkbookFactory
-import org.wito.exdicc.CellHelper._
-import org.wito.exdicc.CellHelper.createCell
-import org.wito.exdicc.CellHelper.isCellEmpty
+import org.wito.exdicc.ExcelHelper._
 
 object ToAnyMemoFormatProcessor {
   def main(args: Array[String]) {
-    new ToAnyMemoFormatProcessor().process(new ProcessingRequest("z:\\exdicc_spanish1.xlsx", "z:\\exdicc_spanish1_anymemo.xlsx"))
+    new ToAnyMemoFormatProcessor().process(new ProcessingRequest("z:\\exdicc_spanish2.xls", "z:\\exdicc_spanish2_anymemo.xls"))
   }
 }
 
-class ToAnyMemoFormatProcessor extends ExcelSupport {
+class ToAnyMemoFormatProcessor {
   private val logger = LogManager.getLogger(getClass)
-
-  private def copyRowToSheet(row: Row, sheet: Sheet) {
-    val newRow = sheet.createRow(sheet.getLastRowNum + 1)
-    for (j <- 1 to row.getLastCellNum) { // all but first
-      copyCell(newRow, j - 1, row.getCell(j))
-    }
-  }
-
-  private def swapColumnsAtSheet(sheet: Sheet, c1: Int, c2: Int) {
-
-    for (i <- sheet.getFirstRowNum to sheet.getLastRowNum) {
-      val row = sheet.getRow(i)
-      val cell1 = row.getCell(c1)
-      val cell1Style = cell1.getCellStyle
-      val cell1Value = cell1.getStringCellValue
-
-      val cell2 = row.getCell(c2)
-      copyCell(row, c1, cell2)
-      cell2.setCellStyle(cell1Style)
-      cell2.setCellValue(cell1Value)
-    }
-  }
 
   def process(preq: ProcessingRequest) {
     val wb = getWorkbook(preq)
@@ -61,14 +31,14 @@ class ToAnyMemoFormatProcessor extends ExcelSupport {
               createCell(row, 3, sheet.getSheetName)
             }
             if (i > 0)
-              copyRowToSheet(row, amSheet)
+              copyRowToSheetWithoutCells(row, amSheet, List(1))
           } else {
             logger.info("Skipping row " + cell0 + " as not translated ")
           }
         }
       }
     }
-    removeAllSheetsButLast(wb)
+    removeSheetsBut(wb, amSheet)
     swapColumnsAtSheet(amSheet, 0, 1)
     saveWorkbook(wb, preq.fout)
   }

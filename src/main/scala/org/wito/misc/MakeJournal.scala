@@ -5,12 +5,10 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
 import java.text.SimpleDateFormat
-import org.wito.exdicc.ExcelSupport
 import org.wito.exdicc.ProcessingRequest
-import org.wito.exdicc.CellHelper
+import org.wito.exdicc.ExcelHelper._
 
-object MakeJournal extends ExcelSupport {
-  import CellHelper._
+object MakeJournal {
   def main(args: Array[String]) {
     val wb = getWorkbook(new ProcessingRequest("w:\\asia_kalendar.xlsx", "w:\\asia_journal.txt"))
 

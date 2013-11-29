@@ -4,18 +4,17 @@ import org.apache.log4j.LogManager
 import org.apache.poi.ss.usermodel.CellStyle
 import org.apache.poi.ss.usermodel.IndexedColors
 import org.apache.poi.ss.usermodel.Workbook
-import org.wito.exdicc.CellHelper.createCell
-import org.wito.exdicc.CellHelper.rowIsTranslated
+import org.wito.exdicc.ExcelHelper._
 
 object MultiThreadsProcessor {
   def main(args: Array[String]) {
     val proc = new MultiThreadsProcessor
-    val preq = new ProcessingRequest("z:\\exdicc_spanish1.xlsx")
+    val preq = new ProcessingRequest("z:\\exdicc_spanish2.xls")
     proc.process(preq, 10)
   }
 }
 
-class MultiThreadsProcessor extends ExcelSupport {
+class MultiThreadsProcessor {
 
   private val logger = LogManager.getLogger(getClass)
 
@@ -23,7 +22,7 @@ class MultiThreadsProcessor extends ExcelSupport {
 
     val changeInOriginalWordCellStyle = wb.createCellStyle
     changeInOriginalWordCellStyle.setFillForegroundColor(IndexedColors.YELLOW.getIndex)
-    changeInOriginalWordCellStyle.setFillPattern(CellStyle.BIG_SPOTS)
+    changeInOriginalWordCellStyle.setFillPattern(CellStyle.SOLID_FOREGROUND)
 
     for (i <- 0 until wb.getNumberOfSheets) {
       val sheet = wb.getSheetAt(i)

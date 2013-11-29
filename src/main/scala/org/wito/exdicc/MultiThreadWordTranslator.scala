@@ -7,8 +7,7 @@ import java.util.concurrent.TimeUnit
 
 import org.apache.log4j.LogManager
 import org.apache.poi.ss.usermodel.Workbook
-import org.wito.exdicc.CellHelper.retryWhenSocketTimeout
-import org.wito.exdicc.CellHelper.rowIsTranslated
+import org.wito.exdicc.ExcelHelper._
 
 class MultiThreadWordTranslator(numOfWorkers: Int) {
 

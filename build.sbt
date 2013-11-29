@@ -19,8 +19,6 @@ libraryDependencies += "org.jsoup" % "jsoup" % "1.7.2"
 
 libraryDependencies += "junit" % "junit" % "4.11" % "test"
 
-libraryDependencies += "net.sourceforge.htmlunit" % "htmlunit" % "2.13"
-
 EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
 
 EclipseKeys.withSource := true

@@ -16,7 +16,6 @@ case class ProcessingRequest(fin: String, fout: String) {
 class SpanishDict {
 
   private val logger = LogManager.getLogger(getClass)
-  private val sentenceTranslator = new SpanishSentenceTranslator
 
   private def getGenderPrefixForNoun(m: Boolean, f: Boolean): String = {
     if (m) {
@@ -58,12 +57,7 @@ class SpanishDict {
 
     if (quickDefNd.isEmpty) {
       logger.info("Can't extract basic info for '" + word + "'")
-      //      val res = sentenceTranslator.translate(word)
-      //      if (res.isEmpty) {
       return None
-      //      } else {
-      //        return Some(new WordInfo(word, word, res.get, "translation"))
-      //      }
     }
 
     val quickDef = quickDefNd.get.text
