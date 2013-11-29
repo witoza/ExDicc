@@ -1,21 +1,49 @@
 package org.wito.exdicc
 
+import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.net.SocketTimeoutException
+
 import org.apache.log4j.LogManager
 import org.apache.poi.ss.usermodel.Cell
+import org.apache.poi.ss.usermodel.CellStyle
+import org.apache.poi.ss.usermodel.IndexedColors
 import org.apache.poi.ss.usermodel.Row
-import org.apache.poi.ss.usermodel.Workbook
 import org.apache.poi.ss.usermodel.Sheet
+import org.apache.poi.ss.usermodel.Workbook
 import org.apache.poi.ss.usermodel.WorkbookFactory
-import java.io.FileInputStream
 
 object ExcelHelper {
 
   private val logger = LogManager.getLogger(getClass)
 
+  private def createModifiedCellStyle(wb: Workbook): CellStyle = {
+    val cellStyle = wb.createCellStyle
+    cellStyle.setFillForegroundColor(IndexedColors.YELLOW.getIndex)
+    cellStyle.setFillPattern(CellStyle.SOLID_FOREGROUND)
+    cellStyle
+  }
+
+  def setCellStyleForModifiedRows(wb: Workbook) {
+    val modifiedCellStyle = createModifiedCellStyle(wb)
+    for (i <- 0 until wb.getNumberOfSheets) {
+      val sheet = wb.getSheetAt(i)
+      for (i <- sheet.getFirstRowNum to sheet.getLastRowNum) {
+        val row = sheet.getRow(i)
+        val cell1 = row.getCell(1)
+        if (i > 0 && !isCellEmpty(cell1)) {
+          cell1.setCellStyle(modifiedCellStyle)
+        }
+      }
+    }
+  }
+
   def getWorkbook(preq: ProcessingRequest): Workbook = {
-    return WorkbookFactory.create(new FileInputStream(preq.fin))
+    return getWorkbook(preq.fin)
+  }
+
+  def getWorkbook(fin: String): Workbook = {
+    return WorkbookFactory.create(new FileInputStream(fin))
   }
 
   def saveWorkbook(wb: Workbook, fout: String) {
@@ -36,10 +64,9 @@ object ExcelHelper {
     }
   }
 
-  def changeRowHeight(sheet: Sheet, rowHeight: Float) {
+  def setRowsHeightInPoints(sheet: Sheet, rowHeight: Float) {
     for (i <- sheet.getFirstRowNum to sheet.getLastRowNum) {
-      val row = sheet.getRow(i)
-      row.setHeightInPoints(rowHeight)
+      sheet.getRow(i).setHeightInPoints(rowHeight)
     }
   }
 
@@ -82,16 +109,19 @@ object ExcelHelper {
   def isCellEmpty(row: Row, cellNbr: Int): Boolean =
     isCellEmpty(row.getCell(cellNbr))
 
-  def copyRowToSheetWithoutCells(row: Row, sheet: Sheet, cellsToSkip: List[Int] = List[Int]()) {
-    val newRow = sheet.createRow(sheet.getLastRowNum)
-    var colN = 0
-    for (j <- 0 to row.getLastCellNum) {
+  def copyRowToSheetWithoutCells(row: Row, sheet: Sheet, cellsToSkip: List[Int]) {
+    val newRow = sheet.createRow(sheet.getLastRowNum + 1)
+    var colN = row.getFirstCellNum.toInt
+    for (j <- row.getFirstCellNum to row.getLastCellNum) {
       if (!cellsToSkip.contains(j)) {
         copyCell(newRow, colN, row.getCell(j))
         colN += 1
       }
     }
-    sheet.createRow(sheet.getLastRowNum + 1)
+  }
+
+  def copyRowToSheet(row: Row, sheet: Sheet, cellsToSkip: List[Int] = List[Int]()) {
+    copyRowToSheetWithoutCells(row, sheet, List[Int]())
   }
 
   def isCellEmpty(cell: Cell): Boolean =
@@ -114,7 +144,9 @@ object ExcelHelper {
       cell.setCellValue("")
     } else {
       cell.setCellValue(ocell.getStringCellValue)
-      cell.setCellStyle(ocell.getCellStyle)
+      if (cell.getSheet().getWorkbook eq ocell.getSheet().getWorkbook) {
+        cell.setCellStyle(ocell.getCellStyle)
+      }
     }
     cell
   }

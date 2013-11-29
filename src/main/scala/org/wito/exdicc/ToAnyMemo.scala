@@ -3,13 +3,14 @@ package org.wito.exdicc
 import org.apache.log4j.LogManager
 import org.wito.exdicc.ExcelHelper._
 
-object ToAnyMemoFormatProcessor {
+object ToAnyMemo {
   def main(args: Array[String]) {
-    new ToAnyMemoFormatProcessor().process(new ProcessingRequest("z:\\exdicc_spanish2.xls", "z:\\exdicc_spanish2_anymemo.xls"))
+    val proc = new ToAnyMemo
+    proc.process(new ProcessingRequest("z:\\exdicc_spanish.xls", "z:\\exdicc_spanish_anymemo.xls"))
   }
 }
 
-class ToAnyMemoFormatProcessor {
+class ToAnyMemo {
   private val logger = LogManager.getLogger(getClass)
 
   def process(preq: ProcessingRequest) {
@@ -20,20 +21,18 @@ class ToAnyMemoFormatProcessor {
       val sheet = wb.getSheetAt(i)
       if (sheet ne amSheet) {
         logger.info("Processing sheet " + sheet.getSheetName)
-        for (i <- sheet.getFirstRowNum to sheet.getLastRowNum) {
+        for (i <- 1 to sheet.getLastRowNum) {
           val row = sheet.getRow(i)
-          val cell0 = row.getCell(0)
           if (rowIsTranslated(row)) {
             if (isCellEmpty(row, 1)) {
-              createCell(row, 1, cell0.getStringCellValue)
+              createCell(row, 1, row.getCell(0).getStringCellValue)
             }
             if (isCellEmpty(row, 3)) {
               createCell(row, 3, sheet.getSheetName)
             }
-            if (i > 0)
-              copyRowToSheetWithoutCells(row, amSheet, List(1))
+            copyRowToSheetWithoutCells(row, amSheet, List(0))
           } else {
-            logger.info("Skipping row " + cell0 + " as not translated ")
+            logger.info("Skipping row #" + i + " as not translated ")
           }
         }
       }

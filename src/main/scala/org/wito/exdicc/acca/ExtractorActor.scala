@@ -9,7 +9,7 @@ class ExtractorActor extends Actor {
     case ProcessingRequest(fin, fout) =>
 
       val proc = new MultiThreadsProcessor()
-      proc.process(new ProcessingRequest(fin, fout), 1)
+//      proc.process(new ProcessingRequest(fin, fout), 1)
 
       sender ! "ACK"
   }

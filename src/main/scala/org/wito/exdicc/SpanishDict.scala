@@ -9,9 +9,7 @@ import org.jsoup.nodes.Element
 
 case class WordInfo(originalWord: String, lookedUpWord: String, quickDef: String, quickPos: String)
 
-case class ProcessingRequest(fin: String, fout: String) {
-  def this(fin: String) = this(fin, fin)
-}
+case class ProcessingRequest(fin: String, fout: String)
 
 class SpanishDict {
 
