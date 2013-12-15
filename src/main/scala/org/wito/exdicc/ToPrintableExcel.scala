@@ -6,7 +6,7 @@ import org.wito.exdicc.ExcelHelper._
 object ToPrintableExcel {
   def main(args: Array[String]) {
     val proc = new ToPrintableExcel
-    proc.process(new ProcessingRequest("z:\\exdicc_spanish2.xls", "z:\\exdicc_spanish2_print.xls"))
+    proc.process(new ProcessingRequest("z:\\exdicc_spanish_3.xls", "z:\\exdicc_spanish_3_print.xls"))
   }
 }
 
@@ -24,12 +24,15 @@ class ToPrintableExcel {
         for (i <- sheet.getFirstRowNum to sheet.getLastRowNum) {
           val row = sheet.getRow(i)
           if (rowIsTranslated(row)) {
-            if (i > 0)
-              copyRowToSheetWithoutCells(row, toPrintSheet, List(1, 3, 4))
+            if (i > 0) {
+              val isTranslated = isCellEmpty(row, 1)
+              copyRowToSheetWithoutCells(row, toPrintSheet, List(if (isTranslated) 1 else 0, 3, 4))
+            }
           } else {
-            logger.info("Skipping row #" + i + " as not translated ")
+            logger.info("Skipping row #" + i + " as not translated")
           }
         }
+        logger.info("Done")
       }
     }
     setRowsHeightInPoints(toPrintSheet, 10.0f)

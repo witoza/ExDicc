@@ -32,7 +32,7 @@ class ToAnyMemo {
             }
             copyRowToSheetWithoutCells(row, amSheet, List(0))
           } else {
-            logger.info("Skipping row #" + i + " as not translated ")
+            logger.info("Skipping row #" + i + " as not translated")
           }
         }
       }

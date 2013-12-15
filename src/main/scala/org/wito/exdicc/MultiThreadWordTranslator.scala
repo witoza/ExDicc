@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit
 
 import org.apache.log4j.LogManager
 import org.apache.poi.ss.usermodel.Workbook
+import org.wito.exdicc.ExcelHelper.isCellEmpty
 import org.wito.exdicc.ExcelHelper.retryWhenSocketTimeout
 import org.wito.exdicc.ExcelHelper.rowIsTranslated
 
@@ -59,13 +60,16 @@ class MultiThreadWordTranslator(numOfWorkers: Int) {
   private def extractWords(wb: Workbook) {
     for (i <- 0 until wb.getNumberOfSheets) {
       val sheet = wb.getSheetAt(i)
+      logger.info("Extracting words from sheet " + sheet.getSheetName)
       for (i <- sheet.getFirstRowNum to sheet.getLastRowNum) {
         val row = sheet.getRow(i)
-        if (!rowIsTranslated(row)) {
-          val theWord = row.getCell(0).getStringCellValue
+        val firstCell = row.getCell(0)
+        if (!rowIsTranslated(row) && !isCellEmpty(firstCell)) {
+          val theWord = firstCell.getStringCellValue
           wordsToHarvest.add(theWord)
         }
       }
+      logger.info("Done")
     }
   }
 

@@ -7,7 +7,7 @@ import org.apache.poi.ss.usermodel.Workbook
 object MultiThreadsProcessor {
   def main(args: Array[String]) {
     val proc = new MultiThreadsProcessor
-    proc.process("z:\\exdicc_spanish2.xls", 10)
+    proc.process("z:\\exdicc_spanish_3.xls", 10)
   }
 }
 
@@ -22,7 +22,8 @@ class MultiThreadsProcessor {
       logger.info("Processing sheet " + sheet.getSheetName)
       for (i <- sheet.getFirstRowNum to sheet.getLastRowNum) {
         val row = sheet.getRow(i)
-        if (!rowIsTranslated(row)) {
+        val firstCell = row.getCell(0)
+        if (!rowIsTranslated(row) && !isCellEmpty(firstCell)) {
           val worldToLookUp = row.getCell(0).getStringCellValue
           val trans = translation.get(worldToLookUp)
           if (trans.isDefined) {
