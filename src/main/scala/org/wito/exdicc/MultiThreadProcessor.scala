@@ -7,7 +7,7 @@ import org.apache.poi.ss.usermodel.Workbook
 object MultiThreadsProcessor {
   def main(args: Array[String]) {
     val proc = new MultiThreadsProcessor
-    proc.process("z:\\exdicc_spanish_3.xls", 10)
+    proc.process("z:\\exdicc_spanish_2.xls", 10)
   }
 }
 

@@ -109,13 +109,23 @@ object ExcelHelper {
   def isCellEmpty(row: Row, cellNbr: Int): Boolean =
     isCellEmpty(row.getCell(cellNbr))
 
-  def copyRowToSheetWithoutCells(row: Row, sheet: Sheet, cellsToSkip: List[Int]) {
+  def copyRowToSheetWithoutCells(row: Row, sheet: Sheet, cellsToSkip: List[Int]): Row = {
     val newRow = sheet.createRow(sheet.getLastRowNum + 1)
     var colN = row.getFirstCellNum.toInt
     for (j <- row.getFirstCellNum to row.getLastCellNum) {
       if (!cellsToSkip.contains(j)) {
         copyCell(newRow, colN, row.getCell(j))
         colN += 1
+      }
+    }
+    newRow
+  }
+
+  def removeCellStyles(row: Row) {
+    for (j <- row.getFirstCellNum to row.getLastCellNum) {
+      if (!isCellEmpty(row, j)) {
+        //TODO: implement
+        //        row.getCell(j).setCellStyle()
       }
     }
   }

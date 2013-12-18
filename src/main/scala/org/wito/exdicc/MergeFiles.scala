@@ -5,7 +5,7 @@ import org.wito.exdicc.ExcelHelper._
 object MergeFiles {
   def main(args: Array[String]) {
     val merger = new MergeFiles
-    merger.merge("z:\\exdicc_spanish1.xls", "z:\\exdicc_spanish2.xls", "z:\\exdicc_spanish.xls")
+    merger.merge("z:\\exdicc_spanish.xls", "z:\\exdicc_spanish_3.xls", "z:\\exdicc_spanish_merged.xls")
   }
 }
 

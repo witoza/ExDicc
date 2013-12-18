@@ -26,7 +26,8 @@ class ToPrintableExcel {
           if (rowIsTranslated(row)) {
             if (i > 0) {
               val isTranslated = isCellEmpty(row, 1)
-              copyRowToSheetWithoutCells(row, toPrintSheet, List(if (isTranslated) 1 else 0, 3, 4))
+              val row1 = copyRowToSheetWithoutCells(row, toPrintSheet, List(if (isTranslated) 1 else 0, 3, 4))
+              removeCellStyles(row1)
             }
           } else {
             logger.info("Skipping row #" + i + " as not translated")
